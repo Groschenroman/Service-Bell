@@ -45,7 +45,7 @@ struct BellScreen: View {
         .accessibilityAction { ring() }
         .accessibilityAction(named: "Stop ringing") { player.silence() }
         .overlay(alignment: .bottom) {
-            Text(verbatim: "Service bell louder by Squidems - freesound.org/s/709925 - Creative Commons 0")
+            Text(verbatim: "\"Service Bell Louder\" by Squidems @ freesound.org")
                 .font(.caption2)
                 .foregroundStyle(.white.opacity(0.35))
                 .multilineTextAlignment(.center)
