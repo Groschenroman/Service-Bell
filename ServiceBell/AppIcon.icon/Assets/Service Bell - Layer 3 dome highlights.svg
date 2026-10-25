@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_3_Layer" data-name="3 – Layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1043.68 1038.78">
+  <defs>
+    <!-- Edge falloff: the dome curves away from the light toward its rim -->
+    <radialGradient id="shade" cx=".44" cy=".40" r=".62" fx=".40" fy=".34">
+      <stop offset="0" stop-color="#000" stop-opacity="0"/>
+      <stop offset=".40" stop-color="#000" stop-opacity="0"/>
+      <stop offset=".80" stop-color="#3a2400" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#2a1800" stop-opacity=".75"/>
+    </radialGradient>
+    <!-- Broad soft highlight from a light source top left -->
+    <radialGradient id="glow" cx=".36" cy=".30" r=".42">
+      <stop offset="0" stop-color="#fff" stop-opacity=".6"/>
+      <stop offset=".45" stop-color="#fff" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Small sharp specular spot -->
+    <radialGradient id="spec" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Reflected light along the lower right rim -->
+    <radialGradient id="rim" cx=".40" cy=".36" r=".66">
+      <stop offset=".80" stop-color="#fff6c8" stop-opacity="0"/>
+      <stop offset=".92" stop-color="#fff6c8" stop-opacity=".4"/>
+      <stop offset="1" stop-color="#fff6c8" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="dome">
+      <path d="M840.57,754.91c-3.13,4.2-9.870,13.53-13.68,17.58-3.28,4.150-25.45,29.26-32.16,35.64-99.57,94.63-252.57,132.94-384.88,92.91-10.2-3.090-44.74-15.79-47.34-17.73-7.6-2.79-22.68-10.37-27.65-13.5C57.78,721.17,53.79,324.12,328.3,171.03c369.92-206.29,764.66,240.67,512.27,583.88Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#dome)">
+    <path fill="url(#shade)" d="M840.57,754.91c-3.13,4.2-9.870,13.53-13.68,17.58-3.28,4.150-25.45,29.26-32.16,35.64-99.57,94.63-252.570,132.94-384.88,92.91-10.2-3.090-44.74-15.79-47.34-17.73-7.6-2.79-22.68-10.37-27.65-13.5C57.78,721.17,53.79,324.12,328.3,171.03c369.92-206.29,764.66,240.67,512.27,583.88Z"/>
+    <path fill="url(#rim)" d="M840.57,754.91c-3.13,4.2-9.870,13.53-13.68,17.58-3.28,4.150-25.45,29.26-32.16,35.64-99.57,94.63-252.570,132.94-384.88,92.91-10.2-3.090-44.74-15.79-47.34-17.73-7.6-2.79-22.68-10.37-27.65-13.5C57.78,721.17,53.79,324.12,328.3,171.03c369.92-206.29,764.66,240.67,512.27,583.88Z"/>
+    <path fill="url(#glow)" d="M840.57,754.91c-3.13,4.2-9.870,13.53-13.68,17.58-3.28,4.150-25.45,29.26-32.16,35.64-99.57,94.63-252.570,132.94-384.88,92.91-10.2-3.090-44.74-15.79-47.34-17.73-7.6-2.79-22.68-10.37-27.65-13.5C57.78,721.17,53.79,324.12,328.3,171.03c369.92-206.29,764.66,240.67,512.27,583.88Z"/>
+    <ellipse fill="url(#spec)" cx="372" cy="318" rx="96" ry="64" transform="rotate(-35 372 318)"/>
+  </g>
+</svg>
