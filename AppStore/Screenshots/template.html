@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Service Bell Screenshot</title>
+<!--
+  App Store screenshot template, 1320 × 2868 (iPhone 6.9").
+  Render with render.mjs; pick the screen with ?shot=ring|stop&lang=en|de.
+  app-screen.png is a simulator capture of the app (1206 × 2622).
+-->
+<style>
+  :root {
+    --cream: #f7ead0;
+    --brass: #ecbf55;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1320px; height: 2868px; overflow: hidden; }
+  body {
+    position: relative;
+    font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    background:
+      radial-gradient(1100px 1300px at 50% 62%, rgba(236, 191, 85, 0.16), transparent 70%),
+      linear-gradient(180deg, #2c1a10 0%, #1c100a 55%, #120a06 100%);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .title {
+    position: absolute;
+    top: 70px; left: 90px; right: 90px;
+    height: 540px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .title h1 {
+    color: var(--cream);
+    font-size: 96px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  .title p {
+    margin-top: 28px;
+    color: var(--brass);
+    font-size: 66px;
+    font-weight: 500;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+  }
+
+  .phone {
+    position: absolute;
+    left: 160px; top: 640px;
+    width: 1000px; height: 2118px;
+    border-radius: 150px;
+    padding: 24px;
+    background: #0a0a0b;
+    box-shadow:
+      0 0 0 5px #3b3631,
+      0 0 0 7px #17130f,
+      0 60px 120px rgba(0, 0, 0, 0.65);
+  }
+  .phone .screen {
+    position: relative;
+    width: 952px; height: 2070px;
+    border-radius: 126px;
+    overflow: hidden;
+    background: url(app-screen.png) center / 100% 100%;
+  }
+  .phone .island {
+    position: absolute;
+    top: 26px; left: 50%;
+    width: 290px; height: 86px;
+    margin-left: -145px;
+    border-radius: 43px;
+    background: #000;
+  }
+
+  svg.overlay { position: absolute; inset: 0; }
+  .hand {
+    position: absolute; inset: 0;
+    filter: drop-shadow(26px 40px 26px rgba(0, 0, 0, 0.55));
+  }
+  .hand img { position: absolute; max-width: none; }
+</style>
+</head>
+<body>
+  <div class="title"><h1></h1><p></p></div>
+  <div class="phone"><div class="screen"><div class="island"></div></div></div>
+  <svg class="overlay" width="1320" height="2868" viewBox="0 0 1320 2868"></svg>
+  <div class="hand"><img alt=""></div>
+  <!-- Shaves a pixel off a cut-out's edge, hiding the light fringe left by its original white background -->
+  <svg width="0" height="0" style="position: absolute">
+    <filter id="trimEdge">
+      <feMorphology in="SourceAlpha" operator="erode" radius="1.5" result="shrunk"/>
+      <feComposite in="SourceGraphic" in2="shrunk" operator="in"/>
+    </filter>
+  </svg>
+
+<script>
+const params = new URLSearchParams(location.search);
+const shot = params.get("shot") || "ring";
+const lang = params.get("lang") || "en";
+
+const titles = {
+  ring: {
+    en: ["Tap the bell to ring it", "just like in real life"],
+    de: ["Tippe auf die Glocke, um zu läuten", "genau wie im echten Leben"],
+  },
+  stop: {
+    en: ["Tap the background to stop it", "unlike in real life"],
+    de: ["Tippe auf den Hintergrund, um den Klang zu stoppen", "anders als im echten Leben"],
+  },
+};
+const [headline, subline] = titles[shot][lang];
+document.documentElement.lang = lang;
+document.querySelector(".title h1").textContent = headline;
+document.querySelector(".title p").textContent = "– " + subline + " –";
+
+// Maps a point of the simulator capture (1206 × 2622) onto the canvas
+const screenScale = 952 / 1206;
+const toCanvas = (x, y) => [160 + 24 + x * screenScale, 640 + 24 + y * screenScale];
+
+// Expanding rings that mark the tap
+function ripples(x, y, color) {
+  return [110, 165, 225].map((r, i) => `<circle cx="${x}" cy="${y}" r="${r}" fill="none"
+    stroke="${color}" stroke-width="${7 - i * 2}" opacity="${0.75 - i * 0.22}"/>`).join("");
+}
+
+// Sound waves above and below the bell, where the screen has room for them
+function soundWaves(cx, cy) {
+  const arc = (r, dir, o) => {
+    const a = (35 * Math.PI) / 180;
+    const x1 = cx - r * Math.sin(a), x2 = cx + r * Math.sin(a);
+    const yy = cy + dir * r * Math.cos(a);
+    return `<path d="M ${x1},${yy} A ${r},${r} 0 0 ${dir > 0 ? 0 : 1} ${x2},${yy}" fill="none"
+      stroke="#f7ead0" stroke-width="12" stroke-linecap="round" opacity="${o}"/>`;
+  };
+  return [-1, 1].flatMap((d) => [arc(470, d, 0.75), arc(540, d, 0.45), arc(610, d, 0.2)]).join("");
+}
+
+/*
+  Hand photos (transparent PNGs) and where they touch the screen.
+  `tip` is the contact point in the photo's own pixels, `lean` how far the finger already
+  tilts in the photo, `scale` sizes the finger (male ≈ 170 px wide, female ≈ 150 px on the canvas).
+*/
+const hands = {
+  male: { src: "finger-black-male.png", w: 823, tip: [458, 62], lean: -2.6, scale: 1.2 },
+  female: { src: "finger-white-female.png", w: 1066, tip: [368, 78], lean: 6, scale: 1.0, trimEdge: true },
+};
+
+const shots = {
+  // Dark-skinned male finger pressing the plunger
+  ring: { at: [603, 1352], angle: -40, hand: hands.male, waves: true },
+  // Light-skinned female finger tapping the walnut below the bell
+  stop: { at: [330, 2010], angle: -52, hand: hands.female, waves: false },
+};
+const cfg = shots[shot];
+const [x, y] = toCanvas(...cfg.at);
+const [bx, by] = toCanvas(603, 1352);
+
+document.querySelector("svg.overlay").innerHTML = `
+  <defs>
+    <clipPath id="screenClip"><rect x="184" y="664" width="952" height="2070" rx="126"/></clipPath>
+  </defs>
+  <g clip-path="url(#screenClip)">
+    ${cfg.waves ? soundWaves(bx, by) : ""}
+    ${ripples(x, y, cfg.waves ? "#fff6dc" : "#f7ead0")}
+  </g>`;
+
+// The photo is rotated around its fingertip; the shadow is applied outside the rotation so it always falls down-right
+const h = cfg.hand;
+const img = document.querySelector(".hand img");
+img.src = h.src;
+img.style.width = `${h.w * h.scale}px`;
+img.style.left = `${x - h.tip[0] * h.scale}px`;
+img.style.top = `${y - h.tip[1] * h.scale}px`;
+img.style.transformOrigin = `${h.tip[0] * h.scale}px ${h.tip[1] * h.scale}px`;
+img.style.transform = `rotate(${cfg.angle - h.lean}deg)`;
+if (h.trimEdge) img.style.filter = "url(#trimEdge)";
+</script>
+</body>
+</html>

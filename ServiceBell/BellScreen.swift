@@ -72,14 +72,11 @@ struct BellMotion {
 struct BellView: View {
     var motion = BellMotion()
 
-    private let brassLight = Color(red: 1.00, green: 0.95, blue: 0.62)
-    private let brass = Color(red: 0.93, green: 0.76, blue: 0.25)
-    private let brassDark = Color(red: 0.55, green: 0.38, blue: 0.08)
-
     var body: some View {
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
             ZStack {
+                castShadow(size)
                 base(size)
                 dome(size * 0.80)
                     .scaleEffect(1 + motion.domeVibration * 0.004)
@@ -91,11 +88,31 @@ struct BellView: View {
         .aspectRatio(1, contentMode: .fit)
     }
 
-    /// A turned wooden base painted black, its grain running across like the board it was cut from.
+    /// The lamp hangs above the upper left, so the bell's shadow falls toward the lower right: a tight, dark
+    /// contact shadow where the base sits, and a longer, softer one from the taller dome.
+    private func castShadow(_ d: CGFloat) -> some View {
+        ZStack {
+            Circle()
+                .fill(.black.opacity(0.7))
+                .frame(width: d * 0.85, height: d * 0.85)
+                .blur(radius: d * 0.06)
+                .offset(x: d * 0.16, y: d * 0.22)
+            Circle()
+                .fill(.black.opacity(0.8))
+                .blur(radius: d * 0.035)
+                .offset(x: d * 0.06, y: d * 0.085)
+            Circle()
+                .fill(.black.opacity(0.85))
+                .blur(radius: d * 0.01)
+                .offset(x: d * 0.012, y: d * 0.018)
+        }
+        .frame(width: d, height: d)
+    }
+
+    /// A turned wooden base painted black, its growth rings circling the middle.
     private func base(_ d: CGFloat) -> some View {
         ZStack {
             WoodSurface(style: .paintedBlack)
-                .rotationEffect(.degrees(90))
 
             // Rounded outer edge: lit from the top left, falling into shadow at the bottom right
             Circle().strokeBorder(
@@ -124,49 +141,13 @@ struct BellView: View {
         }
         .frame(width: d, height: d)
         .clipShape(Circle())
-        .shadow(color: .black.opacity(0.6), radius: d * 0.04, y: d * 0.025)
     }
 
+    /// A simply rounded dome of polished brass, its surface faintly rippled by the lathe,
+    /// mirroring the lamp, window, ceiling and counter.
     private func dome(_ d: CGFloat) -> some View {
-        ZStack {
-            // Body: lit from the top left, darkening toward the rim as the dome curves away
-            Circle().fill(RadialGradient(
-                stops: [
-                    .init(color: brassLight, location: 0.0),
-                    .init(color: brass, location: 0.35),
-                    .init(color: Color(red: 0.80, green: 0.58, blue: 0.16), location: 0.72),
-                    .init(color: brassDark, location: 1.0),
-                ],
-                center: UnitPoint(x: 0.38, y: 0.32), startRadius: 0, endRadius: d * 0.72))
-
-            // Warm reflected light along the lower right rim
-            Circle().fill(RadialGradient(
-                stops: [
-                    .init(color: .clear, location: 0.78),
-                    .init(color: Color(red: 1, green: 0.88, blue: 0.55).opacity(0.45), location: 0.92),
-                    .init(color: .clear, location: 1.0),
-                ],
-                center: UnitPoint(x: 0.42, y: 0.38), startRadius: 0, endRadius: d * 0.62))
-
-            // Window-like reflection, typical for polished brass
-            Ellipse()
-                .fill(RadialGradient(colors: [.white.opacity(0.9), .white.opacity(0.0)],
-                                     center: .center, startRadius: 0, endRadius: d * 0.13))
-                .frame(width: d * 0.30, height: d * 0.17)
-                .rotationEffect(.degrees(-35))
-                .offset(x: -d * 0.17, y: -d * 0.20)
-
-            // Faint secondary reflection opposite the main one
-            Ellipse()
-                .fill(RadialGradient(colors: [.white.opacity(0.35), .white.opacity(0.0)],
-                                     center: .center, startRadius: 0, endRadius: d * 0.08))
-                .frame(width: d * 0.16, height: d * 0.08)
-                .rotationEffect(.degrees(-35))
-                .offset(x: d * 0.24, y: d * 0.26)
-        }
-        .clipShape(Circle())
-        .frame(width: d, height: d)
-        .shadow(color: .black.opacity(0.5), radius: d * 0.02, y: d * 0.01)
+        brass(d, shape: 0)
+            .shadow(color: .black.opacity(0.5), radius: d * 0.02, x: d * 0.006, y: d * 0.01)
     }
 
     /// `depth` 0...1: as the knob sinks toward the dome it moves away from the viewer (smaller, a little darker)
@@ -181,22 +162,27 @@ struct BellView: View {
                 .blur(radius: d * (0.04 + 0.08 * lift))
                 .offset(x: d * 0.12 * lift, y: d * 0.16 * lift)
 
-            ZStack {
-                Circle()
-                    .fill(RadialGradient(colors: [brassLight, brass, brassDark],
-                                         center: UnitPoint(x: 0.35, y: 0.3), startRadius: 0, endRadius: d * 0.6))
-                    .overlay(Circle().strokeBorder(brassDark.opacity(0.8), lineWidth: d * 0.04))
-                    .overlay(Circle().fill(.black.opacity(depth * 0.18)))
-                    .frame(width: d, height: d)
-
-                Circle()
-                    .fill(.white.opacity(0.85 - depth * 0.3))
-                    .frame(width: d * 0.22, height: d * 0.22)
-                    .blur(radius: d * 0.04)
-                    .offset(x: -d * 0.18, y: -d * 0.2)
-            }
-            .scaleEffect(1 - depth * 0.1)
+            // A flat brass button with a rounded edge; the back-bar light shows as a short, soft band at its lower right
+            brass(d, shape: 1, darken: depth * 0.25)
+                .overlay {
+                    // Brightest in the middle of the band, fading out toward both ends and, through the blur, its sides
+                    Circle()
+                        .stroke(AngularGradient(colors: [.clear, .white.opacity(0.8 - depth * 0.35), .clear],
+                                                center: .center, startAngle: .degrees(-10), endAngle: .degrees(100)),
+                                lineWidth: d * 0.15)
+                        .frame(width: d * 0.66, height: d * 0.66)
+                        .blur(radius: d * 0.045)
+                }
+                .scaleEffect(1 - depth * 0.1)
         }
+    }
+
+    /// A round piece of polished brass rendered by the `brass` shader in Brass.metal; `shape` 0 is the dome, 1 the button.
+    private func brass(_ d: CGFloat, shape: Float, darken: CGFloat = 0) -> some View {
+        Circle()
+            .fill(.white)
+            .frame(width: d, height: d)
+            .colorEffect(ShaderLibrary.brass(.float2(d, d), .float(shape), .float(darken)))
     }
 }
 
