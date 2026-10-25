@@ -6,7 +6,8 @@ struct BellScreen: View {
 
     var body: some View {
         ZStack {
-            WalnutSurface()
+            WoodSurface(style: .walnut)
+                .ignoresSafeArea()
 
             KeyframeAnimator(initialValue: BellMotion(), trigger: rings) { motion in
                 BellView(motion: motion)
@@ -39,6 +40,15 @@ struct BellScreen: View {
         .accessibilityLabel("Service bell")
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { ring() }
+        .overlay(alignment: .bottom) {
+            Text(verbatim: "Service bell louder by Squidems - freesound.org/s/709925 - Creative Commons 0")
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.35))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 8)
+                .allowsHitTesting(false) // taps on the note still ring the bell
+        }
     }
 
     private func ring() {
@@ -77,21 +87,40 @@ struct BellView: View {
         .aspectRatio(1, contentMode: .fit)
     }
 
+    /// A turned wooden base painted black, its grain running across like the board it was cut from.
     private func base(_ d: CGFloat) -> some View {
-        Circle()
-            .fill(RadialGradient(colors: [Color(white: 0.16), Color(white: 0.03)],
-                                 center: UnitPoint(x: 0.4, y: 0.35), startRadius: 0, endRadius: d * 0.6))
-            .overlay(
-                // Glossy lacquer reflection along the upper left edge
-                Circle().strokeBorder(
-                    AngularGradient(colors: [.white.opacity(0.0), .white.opacity(0.35), .white.opacity(0.0),
-                                             .white.opacity(0.08), .white.opacity(0.0)],
-                                    center: .center, angle: .degrees(150)),
-                    lineWidth: d * 0.025)
-                .padding(d * 0.02)
-            )
-            .frame(width: d, height: d)
-            .shadow(color: .black.opacity(0.6), radius: d * 0.04, y: d * 0.025)
+        ZStack {
+            WoodSurface(style: .paintedBlack)
+                .rotationEffect(.degrees(90))
+
+            // Rounded outer edge: lit from the top left, falling into shadow at the bottom right
+            Circle().strokeBorder(
+                LinearGradient(colors: [.white.opacity(0.22), .clear, .black.opacity(0.55)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                lineWidth: d * 0.035)
+                .blur(radius: d * 0.006)
+
+            // Lacquer reflection along the upper left edge
+            Circle().strokeBorder(
+                AngularGradient(colors: [.white.opacity(0.0), .white.opacity(0.3), .white.opacity(0.0),
+                                         .white.opacity(0.06), .white.opacity(0.0)],
+                                center: .center, angle: .degrees(150)),
+                lineWidth: d * 0.018)
+                .padding(d * 0.045)
+
+            // Soft sheen across the polished top
+            Circle().fill(RadialGradient(colors: [.white.opacity(0.07), .clear],
+                                         center: UnitPoint(x: 0.3, y: 0.25), startRadius: 0, endRadius: d * 0.5))
+
+            // Seat where the dome meets the wood
+            Circle()
+                .stroke(.black.opacity(0.6), lineWidth: d * 0.012)
+                .frame(width: d * 0.81, height: d * 0.81)
+                .blur(radius: d * 0.004)
+        }
+        .frame(width: d, height: d)
+        .clipShape(Circle())
+        .shadow(color: .black.opacity(0.6), radius: d * 0.04, y: d * 0.025)
     }
 
     private func dome(_ d: CGFloat) -> some View {
