@@ -30,4 +30,15 @@ final class BellPlayer {
         activePlayers.append(player)
         player.play()
     }
+
+    /// Fades out everything still ringing, like a hand muffling the bell. Rings started during the fade are kept.
+    func silence(fadeDuration: TimeInterval = 0.25) {
+        let fading = activePlayers.filter(\.isPlaying)
+        activePlayers.removeAll()
+        for player in fading { player.setVolume(0, fadeDuration: fadeDuration) }
+        Task {
+            try? await Task.sleep(for: .seconds(fadeDuration))
+            fading.forEach { $0.stop() }
+        }
+    }
 }

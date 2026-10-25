@@ -11,6 +11,8 @@ struct BellScreen: View {
 
             KeyframeAnimator(initialValue: BellMotion(), trigger: rings) { motion in
                 BellView(motion: motion)
+                    .contentShape(Circle())
+                    .onTapGesture(perform: ring)
             } keyframes: { _ in
                 // Knob: snaps down, rests a moment, then the spring pushes it back with a slight overshoot
                 KeyframeTrack(\.knobDepth) {
@@ -31,8 +33,9 @@ struct BellScreen: View {
             }
             .padding(32)
         }
+        // Tapping the table muffles the bell; taps on the bell itself are handled above
         .contentShape(Rectangle())
-        .onTapGesture(perform: ring)
+        .onTapGesture { player.silence() }
         .sensoryFeedback(.impact(weight: .medium), trigger: rings)
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
@@ -40,6 +43,7 @@ struct BellScreen: View {
         .accessibilityLabel("Service bell")
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { ring() }
+        .accessibilityAction(named: "Stop ringing") { player.silence() }
         .overlay(alignment: .bottom) {
             Text(verbatim: "Service bell louder by Squidems - freesound.org/s/709925 - Creative Commons 0")
                 .font(.caption2)
@@ -47,7 +51,7 @@ struct BellScreen: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 8)
-                .allowsHitTesting(false) // taps on the note still ring the bell
+                .allowsHitTesting(false) // taps on the note count as taps on the table
         }
     }
 
